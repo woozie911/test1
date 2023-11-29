@@ -4,9 +4,10 @@
 
 
 std::string msg_str;
-std::mutex m;
+std::mutex mtx;
+std::condition_variable cv;
 bool is_comlete=false;
-int flag=1;
+int current_thread=1;
 
 server::server(int port,std::string ip)
 {
@@ -67,10 +68,6 @@ void server::HandleClient(int conn)
 {
 
     while (1) {
-        if (is_comlete)
-        {
-            break;
-        }
         
         char recv_str[1024];
         memset(recv_str, 0, sizeof(recv_str));
@@ -86,27 +83,33 @@ void server::HandleClient(int conn)
         }
 
         std::string str(recv_str);
-        for (int i = 0; i < 3; i++)
+        std::cout<<str<<std::endl;
+        if (str=="work")
         {
-            /* code */
+            std::thread t1(server::Handler,"Cpp is",1);
+            std::thread t2(server::Handler,"the best",2);
+            std::thread t3(server::Handler,"language",3);
+            t1.join();
+            t2.join();
+            t3.join();
         }
-        
-        std::thread t(server::Handler,str);
-        t.detach();
-
+        std::cout<<msg_str<<std::endl;
+        //current_thread=1;
     }
     close(conn);
 }
 
-void server::Handler(std::string str)
+void server::Handler(std::string str,int number)
 {
-    m.lock();
-    if (str == "complete") {
-        is_comlete = true;
-        std::cout << msg_str << std::endl;
-    } else {
-        msg_str += str;
-        msg_str += ";";
-    }
-    m.unlock();
+    std::unique_lock<std::mutex> lock(mtx);
+    int i=current_thread;
+    cv.wait(lock,[i,number]{return number==i;});
+
+    //线程执行的任务
+    msg_str += str;
+    msg_str += " ";
+
+    ++current_thread;
+
+    cv.notify_all();
 }
