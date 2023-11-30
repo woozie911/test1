@@ -27,7 +27,7 @@ class client
         ~client();
         void run();
         static void SendMsg(int conn);
-        // static void RecvMsg(int conn);
+        //static void RecvMsg(int conn);
 
 };
 #endif

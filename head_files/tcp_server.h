@@ -13,7 +13,10 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <thread>
+#include <sys/epoll.h>
 #include <mutex>
+
+#define MAXLIINE 10
 class server
 {
     private:
@@ -27,7 +30,7 @@ class server
 
         void run();
         static void HandleClient(int conn);  //子线程工作的静态函数
-        static void Handler(std::string str,int number);
+        static void Handler(std::string str,int number,int &current_thread);
 
 };
 
